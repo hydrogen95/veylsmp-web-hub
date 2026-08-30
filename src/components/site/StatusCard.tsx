@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { motion } from "motion/react";
-import { Activity, Gauge, Signal, Users } from "lucide-react";
+import { Activity, Gauge, Users } from "lucide-react";
 import { statusQuery } from "@/lib/site";
 import type { ServerSettings } from "@/lib/content.functions";
 
