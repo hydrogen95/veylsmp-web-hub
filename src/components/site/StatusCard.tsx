@@ -85,8 +85,7 @@ export function StatusCard({ server }: { server: ServerSettings | null }) {
         </div>
       </div>
 
-      <div className="mt-6 grid grid-cols-2 gap-3 border-t border-border pt-5 text-sm sm:grid-cols-4">
-        <Stat icon={Signal} label="Address" value={data?.hostname || "—"} />
+      <div className="mt-6 grid grid-cols-2 gap-3 border-t border-border pt-5 text-sm sm:grid-cols-3">
         <Stat icon={Activity} label="Version" value={(!unavailable && data?.version) || "—"} />
         <Stat
           icon={Gauge}
@@ -99,6 +98,7 @@ export function StatusCard({ server }: { server: ServerSettings | null }) {
           value={`${Math.max(30, server?.refresh_interval ?? 45)}s`}
         />
       </div>
+
     </motion.div>
   );
 }
