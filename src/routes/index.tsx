@@ -5,16 +5,12 @@ import { siteContentQuery, fullAddress, isSectionVisible } from "@/lib/site";
 import { SiteLayout } from "@/components/site/SiteLayout";
 import { StatusCard } from "@/components/site/StatusCard";
 import {
-  ConnectionCard,
-  CrossplaySection,
   DiscordSection,
   FeaturesSection,
   HowToJoinSection,
-  NewsSection,
-  RanksSection,
-  ServerInfoSection,
 } from "@/components/site/Sections";
 import { CopyButton } from "@/components/site/CopyButton";
+
 
 export const Route = createFileRoute("/")({
   loader: ({ context }) => context.queryClient.ensureQueryData(siteContentQuery),
@@ -97,7 +93,7 @@ function Home() {
             className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row"
           >
             <a
-              href={site?.primary_button_url || "#connect"}
+              href={site?.primary_button_url || "/server"}
               className="bg-brand inline-flex min-h-12 w-full items-center justify-center rounded-xl px-8 text-sm font-bold tracking-wide text-primary-foreground shadow-[var(--shadow-glow)] transition-transform hover:scale-[1.03] sm:w-auto"
             >
               {site?.primary_button_label}
@@ -134,19 +130,7 @@ function Home() {
         </section>
       )}
 
-      {visible("connect") && (
-        <section className="section-pad">
-          <div className="mx-auto max-w-6xl px-4 md:px-6">
-            <ConnectionCard content={data} />
-          </div>
-        </section>
-      )}
-
-      {visible("crossplay") && <CrossplaySection content={data} />}
       {visible("features") && <FeaturesSection content={data} />}
-      {visible("info") && <ServerInfoSection content={data} />}
-      {visible("ranks") && <RanksSection content={data} limit={3} />}
-      {visible("news") && <NewsSection content={data} />}
       {visible("join") && <HowToJoinSection content={data} />}
       {visible("discord") && <DiscordSection content={data} />}
     </SiteLayout>
