@@ -5,16 +5,12 @@ import { siteContentQuery, fullAddress, isSectionVisible } from "@/lib/site";
 import { SiteLayout } from "@/components/site/SiteLayout";
 import { StatusCard } from "@/components/site/StatusCard";
 import {
-  ConnectionCard,
-  CrossplaySection,
   DiscordSection,
   FeaturesSection,
   HowToJoinSection,
-  NewsSection,
-  RanksSection,
-  ServerInfoSection,
 } from "@/components/site/Sections";
 import { CopyButton } from "@/components/site/CopyButton";
+
 
 export const Route = createFileRoute("/")({
   loader: ({ context }) => context.queryClient.ensureQueryData(siteContentQuery),
