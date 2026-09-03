@@ -10,15 +10,22 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AccountRouteImport } from './routes/account'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as NewsRouteImport } from './routes/news'
 import { Route as RanksRouteImport } from './routes/ranks'
 import { Route as RulesRouteImport } from './routes/rules'
 import { Route as ServerRouteImport } from './routes/server'
+import { Route as AuthBridgeRouteImport } from './routes/auth.bridge'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AccountRoute = AccountRouteImport.update({
+  id: '/account',
+  path: '/account',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AdminRoute = AdminRouteImport.update({
@@ -46,47 +53,85 @@ const ServerRoute = ServerRouteImport.update({
   path: '/server',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthBridgeRoute = AuthBridgeRouteImport.update({
+  id: '/auth/bridge',
+  path: '/auth/bridge',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/account': typeof AccountRoute
   '/admin': typeof AdminRoute
   '/news': typeof NewsRoute
   '/ranks': typeof RanksRoute
   '/rules': typeof RulesRoute
   '/server': typeof ServerRoute
+  '/auth/bridge': typeof AuthBridgeRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/account': typeof AccountRoute
   '/admin': typeof AdminRoute
   '/news': typeof NewsRoute
   '/ranks': typeof RanksRoute
   '/rules': typeof RulesRoute
   '/server': typeof ServerRoute
+  '/auth/bridge': typeof AuthBridgeRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/account': typeof AccountRoute
   '/admin': typeof AdminRoute
   '/news': typeof NewsRoute
   '/ranks': typeof RanksRoute
   '/rules': typeof RulesRoute
   '/server': typeof ServerRoute
+  '/auth/bridge': typeof AuthBridgeRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/admin' | '/news' | '/ranks' | '/rules' | '/server'
+  fullPaths:
+    | '/'
+    | '/account'
+    | '/admin'
+    | '/news'
+    | '/ranks'
+    | '/rules'
+    | '/server'
+    | '/auth/bridge'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/admin' | '/news' | '/ranks' | '/rules' | '/server'
-  id: '__root__' | '/' | '/admin' | '/news' | '/ranks' | '/rules' | '/server'
+  to:
+    | '/'
+    | '/account'
+    | '/admin'
+    | '/news'
+    | '/ranks'
+    | '/rules'
+    | '/server'
+    | '/auth/bridge'
+  id:
+    | '__root__'
+    | '/'
+    | '/account'
+    | '/admin'
+    | '/news'
+    | '/ranks'
+    | '/rules'
+    | '/server'
+    | '/auth/bridge'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AccountRoute: typeof AccountRoute
   AdminRoute: typeof AdminRoute
   NewsRoute: typeof NewsRoute
   RanksRoute: typeof RanksRoute
   RulesRoute: typeof RulesRoute
   ServerRoute: typeof ServerRoute
+  AuthBridgeRoute: typeof AuthBridgeRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -96,6 +141,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/account': {
+      id: '/account'
+      path: '/account'
+      fullPath: '/account'
+      preLoaderRoute: typeof AccountRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/admin': {
@@ -133,16 +185,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ServerRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/auth/bridge': {
+      id: '/auth/bridge'
+      path: '/auth/bridge'
+      fullPath: '/auth/bridge'
+      preLoaderRoute: typeof AuthBridgeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AccountRoute: AccountRoute,
   AdminRoute: AdminRoute,
   NewsRoute: NewsRoute,
   RanksRoute: RanksRoute,
   RulesRoute: RulesRoute,
   ServerRoute: ServerRoute,
+  AuthBridgeRoute: AuthBridgeRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
