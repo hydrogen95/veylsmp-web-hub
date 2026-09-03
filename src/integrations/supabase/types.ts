@@ -176,6 +176,62 @@ export type Database = {
         }
         Relationships: []
       }
+      players: {
+        Row: {
+          created_at: string
+          display_name: string | null
+          email: string | null
+          id: string
+          join_status: string
+          minecraft_username: string | null
+          notes: string | null
+          platform: string
+          points: number
+          rank_id: string | null
+          rank_label: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          display_name?: string | null
+          email?: string | null
+          id?: string
+          join_status?: string
+          minecraft_username?: string | null
+          notes?: string | null
+          platform?: string
+          points?: number
+          rank_id?: string | null
+          rank_label?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          display_name?: string | null
+          email?: string | null
+          id?: string
+          join_status?: string
+          minecraft_username?: string | null
+          notes?: string | null
+          platform?: string
+          points?: number
+          rank_id?: string | null
+          rank_label?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "players_rank_id_fkey"
+            columns: ["rank_id"]
+            isOneToOne: false
+            referencedRelation: "ranks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       rank_categories: {
         Row: {
           created_at: string
