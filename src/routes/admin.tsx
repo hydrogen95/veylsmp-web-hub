@@ -14,11 +14,14 @@ import {
   Server,
   Sparkles,
   Trash2,
+  Users,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { lovable } from "@/integrations/lovable";
 import { AdminCard, Button, Field, Select, TextArea, TextInput, Toggle } from "@/components/admin/ui";
 import { cn } from "@/lib/utils";
+import { consumeBridgeSession, signInWithGoogle } from "@/lib/auth-bridge";
+import { joinStatusMeta } from "@/routes/account";
+import type { Database } from "@/integrations/supabase/types";
 import type {
   Feature,
   NavItem,
@@ -29,6 +32,8 @@ import type {
   ServerSettings,
   SiteSettings,
 } from "@/lib/content.functions";
+
+type Player = Database["public"]["Tables"]["players"]["Row"];
 
 export const Route = createFileRoute("/admin")({
   ssr: false,
@@ -44,17 +49,43 @@ export const Route = createFileRoute("/admin")({
   component: AdminPage,
 });
 
-type Tab = "server" | "homepage" | "features" | "ranks" | "rules" | "news" | "navigation";
+type Tab =
+  | "server"
+  | "homepage"
+  | "features"
+  | "ranks"
+  | "rules"
+  | "news"
+  | "navigation"
+  | "players";
 
-const tabs: Array<{ key: Tab; label: string; icon: React.ComponentType<{ className?: string }> }> = [
-  { key: "server", label: "Server", icon: Server },
-  { key: "homepage", label: "Homepage", icon: LayoutDashboard },
-  { key: "features", label: "Features", icon: Sparkles },
-  { key: "ranks", label: "Ranks", icon: Gauge },
-  { key: "rules", label: "Rules", icon: ScrollText },
-  { key: "news", label: "News", icon: Newspaper },
-  { key: "navigation", label: "Navigation", icon: ListOrdered },
+const tabGroups: Array<{
+  group: string;
+  items: Array<{ key: Tab; label: string; icon: React.ComponentType<{ className?: string }> }>;
+}> = [
+  {
+    group: "Server",
+    items: [
+      { key: "server", label: "Server & status", icon: Server },
+      { key: "players", label: "Players", icon: Users },
+    ],
+  },
+  {
+    group: "Content",
+    items: [
+      { key: "homepage", label: "Homepage", icon: LayoutDashboard },
+      { key: "features", label: "Features", icon: Sparkles },
+      { key: "ranks", label: "Ranks & store", icon: Gauge },
+      { key: "rules", label: "Rules", icon: ScrollText },
+      { key: "news", label: "News", icon: Newspaper },
+    ],
+  },
+  {
+    group: "Structure",
+    items: [{ key: "navigation", label: "Navigation", icon: ListOrdered }],
+  },
 ];
+
 
 function useSession() {
   const [email, setEmail] = useState<string | null>(null);
