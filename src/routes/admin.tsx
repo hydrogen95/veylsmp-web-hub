@@ -92,10 +92,13 @@ function useSession() {
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data }) => {
+    (async () => {
+      await consumeBridgeSession();
+      const { data } = await supabase.auth.getSession();
       setEmail(data.session?.user.email ?? null);
       setReady(true);
-    });
+    })();
+
     const { data: sub } = supabase.auth.onAuthStateChange((_e, session) => {
       setEmail(session?.user.email ?? null);
       setReady(true);
