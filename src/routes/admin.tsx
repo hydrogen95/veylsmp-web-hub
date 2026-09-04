@@ -128,11 +128,10 @@ function AdminPage() {
   });
 
   async function signIn() {
-    const res = await lovable.auth.signInWithOAuth("google", {
-      redirect_uri: `${window.location.origin}/admin`,
-    });
-    if ("error" in res && res.error) toast.error("Sign-in failed", { description: res.error.message });
+    const err = await signInWithGoogle("/admin");
+    if (err) toast.error("Sign-in failed", { description: err });
   }
+
 
   async function signOut() {
     await supabase.auth.signOut();
