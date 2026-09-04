@@ -20,7 +20,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { AdminCard, Button, Field, Select, TextArea, TextInput, Toggle } from "@/components/admin/ui";
 import { cn } from "@/lib/utils";
 import { consumeBridgeSession, signInWithGoogle } from "@/lib/auth-bridge";
-import { joinStatusMeta } from "@/routes/account";
+import { joinStatusMeta, joinStatusOptions } from "@/lib/site";
 import type { Database } from "@/integrations/supabase/types";
 import type {
   Feature,
@@ -889,6 +889,114 @@ function NavigationEditor() {
       >
         <Plus className="mr-2 size-4" /> Add link
       </Button>
+    </AdminCard>
+  );
+}
+
+function PlayersEditor() {
+  const { data } = useTable<Player>("players", "created_at");
+  const ranks = useTable<Rank>("ranks", "sort_order");
+  const refresh = useRefresh("players");
+  const [rows, setRows] = useState<Player[]>([]);
+  const [search, setSearch] = useState("");
+  useEffect(() => setRows(data ?? []), [data]);
+
+  const filtered = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    if (!q) return rows;
+    return rows.filter((r) =>
+      [r.minecraft_username, r.email, r.display_name].some((v) => v?.toLowerCase().includes(q)),
+    );
+  }, [rows, search]);
+
+  return (
+    <AdminCard
+      title="Players"
+      description="Set each player's rank, points and join status. Players manage their own username."
+    >
+      <Field label="Search">
+        <TextInput
+          value={search}
+          placeholder="Username or email"
+          onChange={(e) => setSearch(e.target.value)}
+        />
+      </Field>
+
+      {filtered.length === 0 && (
+        <p className="text-sm text-muted-foreground">
+          No player accounts yet. Players appear here after they sign in on /account.
+        </p>
+      )}
+
+      {filtered.map((row) => {
+        const patch = (p: Partial<Player>) =>
+          setRows(rows.map((r) => (r.id === row.id ? { ...r, ...p } : r)));
+        return (
+          <div key={row.id} className="rounded-2xl border border-border p-4">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <p className="font-display text-base font-bold">
+                {row.minecraft_username || row.display_name || "Unnamed player"}
+              </p>
+              <p className="text-xs text-muted-foreground">{row.email}</p>
+            </div>
+            <div className="mt-3 grid gap-3 sm:grid-cols-2">
+              <Field label="Rank">
+                <Select
+                  value={row.rank_id ?? ""}
+                  onChange={(e) => {
+                    const id = e.target.value || null;
+                    const rank = (ranks.data ?? []).find((r) => r.id === id);
+                    patch({ rank_id: id, rank_label: rank?.name ?? null });
+                  }}
+                >
+                  <option value="">No rank</option>
+                  {(ranks.data ?? []).map((r) => (
+                    <option key={r.id} value={r.id}>
+                      {r.name}
+                    </option>
+                  ))}
+                </Select>
+              </Field>
+              <Field label="Points">
+                <TextInput
+                  type="number"
+                  value={row.points}
+                  onChange={(e) => patch({ points: Number(e.target.value) })}
+                />
+              </Field>
+              <Field label="Join status">
+                <Select
+                  value={row.join_status}
+                  onChange={(e) => patch({ join_status: e.target.value })}
+                >
+                  {joinStatusOptions.map((s) => (
+                    <option key={s} value={s}>
+                      {joinStatusMeta[s]?.label ?? s}
+                    </option>
+                  ))}
+                </Select>
+              </Field>
+              <Field label="Platform">
+                <TextInput value={row.platform} onChange={(e) => patch({ platform: e.target.value })} />
+              </Field>
+            </div>
+            <div className="mt-3">
+              <Field label="Staff notes">
+                <TextArea
+                  value={row.notes ?? ""}
+                  onChange={(e) => patch({ notes: e.target.value || null })}
+                />
+              </Field>
+            </div>
+            <div className="mt-4 flex gap-2">
+              <Button onClick={() => saveRow("players", row, refresh)}>Save</Button>
+              <Button variant="danger" onClick={() => deleteRow("players", row.id, refresh)}>
+                <Trash2 className="mr-2 size-4" /> Delete
+              </Button>
+            </div>
+          </div>
+        );
+      })}
     </AdminCard>
   );
 }
