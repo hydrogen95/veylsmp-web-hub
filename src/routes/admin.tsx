@@ -189,33 +189,43 @@ function AdminPage() {
         </Button>
       </div>
 
-      <div className="grid gap-6 md:grid-cols-[220px_1fr]">
-        <nav className="glass-card flex gap-1 overflow-x-auto p-2 md:flex-col md:overflow-visible">
-          {tabs.map((t) => (
-            <button
-              key={t.key}
-              type="button"
-              onClick={() => setTab(t.key)}
-              className={cn(
-                "flex min-h-11 shrink-0 items-center gap-2 rounded-xl px-3 text-sm font-medium transition-colors",
-                tab === t.key
-                  ? "bg-surface-2 text-foreground"
-                  : "text-muted-foreground hover:text-foreground",
-              )}
-            >
-              <t.icon className="size-4 text-accent" /> {t.label}
-            </button>
+      <div className="grid gap-6 md:grid-cols-[230px_1fr]">
+        <nav className="glass-card flex gap-3 overflow-x-auto p-3 md:flex-col md:gap-4 md:overflow-visible">
+          {tabGroups.map((group) => (
+            <div key={group.group} className="flex shrink-0 gap-1 md:flex-col">
+              <p className="hidden px-3 pb-1 text-[10px] font-semibold tracking-widest text-muted-foreground md:block">
+                {group.group.toUpperCase()}
+              </p>
+              {group.items.map((t) => (
+                <button
+                  key={t.key}
+                  type="button"
+                  onClick={() => setTab(t.key)}
+                  className={cn(
+                    "flex min-h-11 shrink-0 items-center gap-2 rounded-xl px-3 text-sm font-medium transition-colors",
+                    tab === t.key
+                      ? "bg-surface-2 text-foreground"
+                      : "text-muted-foreground hover:text-foreground",
+                  )}
+                >
+                  <t.icon className="size-4 text-accent" /> {t.label}
+                </button>
+              ))}
+            </div>
           ))}
         </nav>
 
         <div className="space-y-6">
           {tab === "server" && <ServerEditor />}
+          {tab === "players" && <PlayersEditor />}
           {tab === "homepage" && <HomepageEditor />}
           {tab === "features" && <FeaturesEditor />}
           {tab === "ranks" && <RanksEditor />}
           {tab === "rules" && <RulesEditor />}
           {tab === "news" && <NewsEditor />}
           {tab === "navigation" && <NavigationEditor />}
+        </div>
+
         </div>
       </div>
     </Shell>
