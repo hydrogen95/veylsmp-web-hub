@@ -225,9 +225,8 @@ function AdminPage() {
           {tab === "news" && <NewsEditor />}
           {tab === "navigation" && <NavigationEditor />}
         </div>
-
-        </div>
       </div>
+
     </Shell>
   );
 }
