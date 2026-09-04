@@ -59,6 +59,13 @@ export function SiteLayout({ children }: { children: React.ReactNode }) {
               Discord
             </a>
             <Link
+              to="/account"
+              activeProps={{ className: "text-foreground" }}
+              className="rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+            >
+              My Account
+            </Link>
+            <Link
               to="/server"
               className="bg-brand ml-2 inline-flex min-h-10 items-center rounded-xl px-4 text-sm font-bold tracking-wide text-primary-foreground shadow-[var(--shadow-glow)] transition-transform hover:scale-[1.03]"
             >
@@ -117,6 +124,13 @@ export function SiteLayout({ children }: { children: React.ReactNode }) {
                 >
                   Discord
                 </a>
+                <Link
+                  to="/account"
+                  onClick={() => setOpen(false)}
+                  className="rounded-xl px-4 py-3 text-base font-medium text-muted-foreground"
+                >
+                  My Account
+                </Link>
                 <Link
                   to="/server"
                   onClick={() => setOpen(false)}
