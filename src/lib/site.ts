@@ -52,3 +52,12 @@ export function isSectionVisible(sections: unknown, key: string) {
   );
   return found ? found.visible !== false : true;
 }
+
+export const joinStatusOptions = ["pending", "approved", "joined", "banned"] as const;
+
+export const joinStatusMeta: Record<string, { label: string }> = {
+  pending: { label: "Pending review" },
+  approved: { label: "Approved — ready to join" },
+  joined: { label: "Joined" },
+  banned: { label: "Banned" },
+};

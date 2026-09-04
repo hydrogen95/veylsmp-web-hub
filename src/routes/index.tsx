@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { motion } from "motion/react";
 import { siteContentQuery, fullAddress, isSectionVisible } from "@/lib/site";
@@ -98,6 +98,12 @@ function Home() {
             >
               {site?.primary_button_label}
             </a>
+            <Link
+              to="/account"
+              className="inline-flex min-h-12 w-full items-center justify-center rounded-xl border border-accent/50 bg-surface-2/60 px-8 text-sm font-bold tracking-wide text-accent transition-colors hover:border-accent sm:w-auto"
+            >
+              MY ACCOUNT
+            </Link>
             <a
               href={site?.discord_url ?? "#"}
               target="_blank"

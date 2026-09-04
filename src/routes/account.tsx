@@ -7,7 +7,7 @@ import { CheckCircle2, Clock, Coins, Crown, LogOut, ShieldAlert, User } from "lu
 import { supabase } from "@/integrations/supabase/client";
 import { SiteLayout } from "@/components/site/SiteLayout";
 import { Button, Field, Select, TextInput } from "@/components/admin/ui";
-import { siteContentQuery } from "@/lib/site";
+import { joinStatusMeta, siteContentQuery } from "@/lib/site";
 import { consumeBridgeSession, signInWithGoogle } from "@/lib/auth-bridge";
 import type { Database } from "@/integrations/supabase/types";
 
@@ -33,13 +33,6 @@ export const Route = createFileRoute("/account")({
   }),
   component: AccountPage,
 });
-
-export const joinStatusMeta: Record<string, { label: string; className: string }> = {
-  pending: { label: "Pending review", className: "border-accent/40 text-accent" },
-  approved: { label: "Approved — ready to join", className: "border-primary/50 text-primary" },
-  joined: { label: "Joined", className: "border-primary/50 text-primary" },
-  banned: { label: "Banned", className: "border-destructive/50 text-destructive" },
-};
 
 function AccountPage() {
   const qc = useQueryClient();
@@ -130,7 +123,7 @@ function AccountPage() {
 
   const rank = content.ranks.find((r) => r.id === player.data?.rank_id);
   const rankName = rank?.name ?? player.data?.rank_label ?? "No rank yet";
-  const status = joinStatusMeta[player.data?.join_status ?? "pending"] ?? joinStatusMeta["pending"]!;
+  const status = joinStatusMeta[player.data?.join_status ?? "pending"] ?? { label: "Pending review" };
 
   return (
     <SiteLayout>
@@ -241,7 +234,7 @@ function Stat({
   icon: React.ComponentType<{ className?: string }>;
   label: string;
   value: string;
-  accent?: string;
+  accent?: string | undefined;
 }) {
   return (
     <div className="glass-card p-5">

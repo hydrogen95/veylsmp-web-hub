@@ -20,7 +20,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { AdminCard, Button, Field, Select, TextArea, TextInput, Toggle } from "@/components/admin/ui";
 import { cn } from "@/lib/utils";
 import { consumeBridgeSession, signInWithGoogle } from "@/lib/auth-bridge";
-import { joinStatusMeta } from "@/routes/account";
+import { joinStatusMeta, joinStatusOptions } from "@/lib/site";
 import type { Database } from "@/integrations/supabase/types";
 import type {
   Feature,
@@ -92,10 +92,13 @@ function useSession() {
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data }) => {
+    (async () => {
+      await consumeBridgeSession();
+      const { data } = await supabase.auth.getSession();
       setEmail(data.session?.user.email ?? null);
       setReady(true);
-    });
+    })();
+
     const { data: sub } = supabase.auth.onAuthStateChange((_e, session) => {
       setEmail(session?.user.email ?? null);
       setReady(true);
@@ -125,11 +128,10 @@ function AdminPage() {
   });
 
   async function signIn() {
-    const res = await lovable.auth.signInWithOAuth("google", {
-      redirect_uri: `${window.location.origin}/admin`,
-    });
-    if ("error" in res && res.error) toast.error("Sign-in failed", { description: res.error.message });
+    const err = await signInWithGoogle("/admin");
+    if (err) toast.error("Sign-in failed", { description: err });
   }
+
 
   async function signOut() {
     await supabase.auth.signOut();
@@ -187,27 +189,35 @@ function AdminPage() {
         </Button>
       </div>
 
-      <div className="grid gap-6 md:grid-cols-[220px_1fr]">
-        <nav className="glass-card flex gap-1 overflow-x-auto p-2 md:flex-col md:overflow-visible">
-          {tabs.map((t) => (
-            <button
-              key={t.key}
-              type="button"
-              onClick={() => setTab(t.key)}
-              className={cn(
-                "flex min-h-11 shrink-0 items-center gap-2 rounded-xl px-3 text-sm font-medium transition-colors",
-                tab === t.key
-                  ? "bg-surface-2 text-foreground"
-                  : "text-muted-foreground hover:text-foreground",
-              )}
-            >
-              <t.icon className="size-4 text-accent" /> {t.label}
-            </button>
+      <div className="grid gap-6 md:grid-cols-[230px_1fr]">
+        <nav className="glass-card flex gap-3 overflow-x-auto p-3 md:flex-col md:gap-4 md:overflow-visible">
+          {tabGroups.map((group) => (
+            <div key={group.group} className="flex shrink-0 gap-1 md:flex-col">
+              <p className="hidden px-3 pb-1 text-[10px] font-semibold tracking-widest text-muted-foreground md:block">
+                {group.group.toUpperCase()}
+              </p>
+              {group.items.map((t) => (
+                <button
+                  key={t.key}
+                  type="button"
+                  onClick={() => setTab(t.key)}
+                  className={cn(
+                    "flex min-h-11 shrink-0 items-center gap-2 rounded-xl px-3 text-sm font-medium transition-colors",
+                    tab === t.key
+                      ? "bg-surface-2 text-foreground"
+                      : "text-muted-foreground hover:text-foreground",
+                  )}
+                >
+                  <t.icon className="size-4 text-accent" /> {t.label}
+                </button>
+              ))}
+            </div>
           ))}
         </nav>
 
         <div className="space-y-6">
           {tab === "server" && <ServerEditor />}
+          {tab === "players" && <PlayersEditor />}
           {tab === "homepage" && <HomepageEditor />}
           {tab === "features" && <FeaturesEditor />}
           {tab === "ranks" && <RanksEditor />}
@@ -216,6 +226,7 @@ function AdminPage() {
           {tab === "navigation" && <NavigationEditor />}
         </div>
       </div>
+
     </Shell>
   );
 }
@@ -877,6 +888,114 @@ function NavigationEditor() {
       >
         <Plus className="mr-2 size-4" /> Add link
       </Button>
+    </AdminCard>
+  );
+}
+
+function PlayersEditor() {
+  const { data } = useTable<Player>("players", "created_at");
+  const ranks = useTable<Rank>("ranks", "sort_order");
+  const refresh = useRefresh("players");
+  const [rows, setRows] = useState<Player[]>([]);
+  const [search, setSearch] = useState("");
+  useEffect(() => setRows(data ?? []), [data]);
+
+  const filtered = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    if (!q) return rows;
+    return rows.filter((r) =>
+      [r.minecraft_username, r.email, r.display_name].some((v) => v?.toLowerCase().includes(q)),
+    );
+  }, [rows, search]);
+
+  return (
+    <AdminCard
+      title="Players"
+      description="Set each player's rank, points and join status. Players manage their own username."
+    >
+      <Field label="Search">
+        <TextInput
+          value={search}
+          placeholder="Username or email"
+          onChange={(e) => setSearch(e.target.value)}
+        />
+      </Field>
+
+      {filtered.length === 0 && (
+        <p className="text-sm text-muted-foreground">
+          No player accounts yet. Players appear here after they sign in on /account.
+        </p>
+      )}
+
+      {filtered.map((row) => {
+        const patch = (p: Partial<Player>) =>
+          setRows(rows.map((r) => (r.id === row.id ? { ...r, ...p } : r)));
+        return (
+          <div key={row.id} className="rounded-2xl border border-border p-4">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <p className="font-display text-base font-bold">
+                {row.minecraft_username || row.display_name || "Unnamed player"}
+              </p>
+              <p className="text-xs text-muted-foreground">{row.email}</p>
+            </div>
+            <div className="mt-3 grid gap-3 sm:grid-cols-2">
+              <Field label="Rank">
+                <Select
+                  value={row.rank_id ?? ""}
+                  onChange={(e) => {
+                    const id = e.target.value || null;
+                    const rank = (ranks.data ?? []).find((r) => r.id === id);
+                    patch({ rank_id: id, rank_label: rank?.name ?? null });
+                  }}
+                >
+                  <option value="">No rank</option>
+                  {(ranks.data ?? []).map((r) => (
+                    <option key={r.id} value={r.id}>
+                      {r.name}
+                    </option>
+                  ))}
+                </Select>
+              </Field>
+              <Field label="Points">
+                <TextInput
+                  type="number"
+                  value={row.points}
+                  onChange={(e) => patch({ points: Number(e.target.value) })}
+                />
+              </Field>
+              <Field label="Join status">
+                <Select
+                  value={row.join_status}
+                  onChange={(e) => patch({ join_status: e.target.value })}
+                >
+                  {joinStatusOptions.map((s) => (
+                    <option key={s} value={s}>
+                      {joinStatusMeta[s]?.label ?? s}
+                    </option>
+                  ))}
+                </Select>
+              </Field>
+              <Field label="Platform">
+                <TextInput value={row.platform} onChange={(e) => patch({ platform: e.target.value })} />
+              </Field>
+            </div>
+            <div className="mt-3">
+              <Field label="Staff notes">
+                <TextArea
+                  value={row.notes ?? ""}
+                  onChange={(e) => patch({ notes: e.target.value || null })}
+                />
+              </Field>
+            </div>
+            <div className="mt-4 flex gap-2">
+              <Button onClick={() => saveRow("players", row, refresh)}>Save</Button>
+              <Button variant="danger" onClick={() => deleteRow("players", row.id, refresh)}>
+                <Trash2 className="mr-2 size-4" /> Delete
+              </Button>
+            </div>
+          </div>
+        );
+      })}
     </AdminCard>
   );
 }
