@@ -234,7 +234,7 @@ function Stat({
   icon: React.ComponentType<{ className?: string }>;
   label: string;
   value: string;
-  accent?: string;
+  accent?: string | undefined;
 }) {
   return (
     <div className="glass-card p-5">
